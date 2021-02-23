@@ -11,6 +11,10 @@ public class Habitat {
 
     private final HashMap<VehicleType, VehicleProperty> vehiclePropertyMap = new HashMap<>();
     private final ArrayList<Vehicle> vehicleList = new ArrayList<>();
+    private final HashMap<VehicleType, EntityFactory> vehicleFactoryMap = new HashMap<>();
+
+    private int workspaceX = 0;
+    private int workspaceY = 0;
 
     private long simulationTime = 0;
     private enum state {
@@ -37,7 +41,11 @@ public class Habitat {
     private void entityAdd(Entity entity) {
         Vehicle vehicle = entity instanceof Vehicle ? ((Vehicle) entity) : null;
         if (vehicle != null) {
+            vehicle.setPosition((int)(Math.random()*workspaceX), (int)(Math.random()*workspaceY));
+
             vehicleList.add(vehicle);
+            Main.printLog("Vehicle added: " + vehicle.getName());
+            Main.printLog("Vehicle position: " + vehicle.getPositionX() + " " + vehicle.getPositionY());
         }
     }
 
@@ -61,15 +69,25 @@ public class Habitat {
         vehiclePropertyMap.put(vp.vehicleType, vp);
     }
 
+    public void setWorkspacePosition(int x, int y) {
+        workspaceX = x;
+        workspaceY = y;
+    }
+
     public void startSimulation(){
         if(currentState == state.START)
             return;
 
         currentState = state.START;
 
+        for(var vehicleProperty : vehiclePropertyMap.entrySet()) {
+            EntityFactory factory = new EntityFactory(vehicleProperty.getValue());
+            vehicleFactoryMap.put(vehicleProperty.getKey(),factory);
+        }
+
         SimulationEvent event = new SimulationEvent(SIMULATION_START);
         listeners.forEach(x -> x.actionPerformed(event));
-        System.out.println("Simulation start");
+        Main.printLog("Simulation start");
     }
 
     public void stopSimulation(){
@@ -80,7 +98,7 @@ public class Habitat {
         SimulationEvent event = new SimulationEvent(SIMULATION_STOP);
         listeners.forEach(x -> x.actionPerformed(event));
         simulationTime = 0;
-        System.out.println("Simulation stop");
+        Main.printLog("Simulation stop");
     }
 
     public void pauseSimulation(){
@@ -90,7 +108,7 @@ public class Habitat {
         currentState = state.PAUSE;
         SimulationEvent event = new SimulationEvent(SIMULATION_PAUSE);
         listeners.forEach(x -> x.actionPerformed(event));
-        System.out.println("Simulation pause");
+        Main.printLog("Simulation pause");
     }
 
     public long getSimulationTime(){
@@ -101,6 +119,7 @@ public class Habitat {
         if (currentState == state.STOP || currentState == state.PAUSE)
             return;
 
+        vehicleFactoryMap.forEach((vehicleType, entityFactory) -> entityFactory.onFrame(dt));
 
         simulationTime += dt;
     }

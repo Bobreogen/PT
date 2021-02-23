@@ -13,6 +13,7 @@ public class WindowMain extends JFrame {
 
     private TransportSettingPanel truckPanel;
     private TransportSettingPanel carPanel;
+    private JPanel simulationPanel;
     private JToggleButton showSimulationTimeToggle;
     private JToggleButton hideSimulationTimeToggle;
     private JLabel simulationTimeLabel;
@@ -38,6 +39,7 @@ public class WindowMain extends JFrame {
         setFocusable(true);
         requestFocusInWindow();
         this.addKeyListener(new WindowKeyListener());
+        StatisticsCollector.instance().reset();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
@@ -46,7 +48,7 @@ public class WindowMain extends JFrame {
     }
 
     private void showInfo() {
-        new WindowSimulationInformation(this, "123");
+        new WindowSimulationInformation(this, StatisticsCollector.instance().getStatistics());
     }
 
     private void initComponents() {
@@ -66,7 +68,7 @@ public class WindowMain extends JFrame {
         settingsPanel.setFocusable(true);
         add(settingsPanel, BorderLayout.NORTH);
 
-        JPanel simulationPanel = new JPanel();
+        simulationPanel = new JPanel();
         simulationPanel.setPreferredSize(new Dimension(500, 300));
         simulationPanel.setBackground(Color.LIGHT_GRAY);
         add(simulationPanel, BorderLayout.CENTER);
@@ -116,7 +118,6 @@ public class WindowMain extends JFrame {
 
         Habitat.instance().addListener(e -> {
             if (e.getClass() == SimulationEvent.class) {
-
                 switch (((SimulationEvent) e).getAction()) {
                     case SIMULATION_START -> {
                         startSimulationButton.setEnabled(false);
@@ -152,6 +153,8 @@ public class WindowMain extends JFrame {
         Habitat.instance().setVehicleProperty(new VehicleProperty(VehicleType.CAR, carPanel.getTimeGeneration(), carPanel.getProbability()));
         Habitat.instance().setVehicleProperty(new VehicleProperty(VehicleType.TRUCK, truckPanel.getTimeGeneration(), truckPanel.getProbability()));
 
+        Habitat.instance().setWorkspacePosition(simulationPanel.getSize().width, simulationPanel.getSize().height);
+
         Habitat.instance().startSimulation();
     }
 
@@ -171,7 +174,7 @@ public class WindowMain extends JFrame {
         showSimulationTime = show;
         hideSimulationTimeToggle.setSelected(!show);
         showSimulationTimeToggle.setSelected(show);
-        System.out.println(show ? "Show simulation time" : "Hide simulation time");
+        Main.printLog(show ? "Show simulation time" : "Hide simulation time");
     }
 
     boolean getShowSimulationTime() {

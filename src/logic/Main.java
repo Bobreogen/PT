@@ -4,7 +4,14 @@ import gui.WindowMain;
 
 public class Main {
 
-    public static void main(String args[]) {
+    private static final boolean LOG = true;
+
+    public static void printLog(String text) {
+        if(LOG)
+            System.out.println(text);
+    }
+
+    public static void main(String[] args) {
         WindowMain.Instance().start();
     }
 }

@@ -6,7 +6,7 @@ import java.text.ParseException;
 import java.util.Objects;
 
 public class TransportSettingPanel extends JPanel {
-    private final JFormattedTextField timeGenerationValue;
+    private final JTextField timeGenerationValue;
     private final JSlider probabilityValue;
 
 
@@ -18,25 +18,26 @@ public class TransportSettingPanel extends JPanel {
         JLabel timeToGenerationText = new JLabel("Период генерации (сек)");
         add(timeToGenerationText);
 
-        timeGenerationValue = new JFormattedTextField(new JFormattedTextField.AbstractFormatter() {
-            @Override
-            public Object stringToValue(String text) throws ParseException {
-                try{
-                    return Integer.valueOf(text);
-                } catch (Exception e) {
-                    ParseException parseException = new ParseException("", 0);
-                    parseException.addSuppressed(e);
-                    throw parseException;
-                }
-            }
-
-            @Override
-            public String valueToString(Object value) throws ParseException {
-                value = Objects.requireNonNullElse(value, 0);
-                return ((Integer)value).toString();
-            }
-        });
-        timeGenerationValue.setValue(5);
+//        timeGenerationValue = new JFormattedTextField(new JFormattedTextField.AbstractFormatter() {
+//            @Override
+//            public Object stringToValue(String text) throws ParseException {
+//                try{
+//                    return Integer.valueOf(text);
+//                } catch (Exception e) {
+//                    ParseException parseException = new ParseException("", 0);
+//                    parseException.addSuppressed(e);
+//                    throw parseException;
+//                }
+//            }
+//
+//            @Override
+//            public String valueToString(Object value) throws ParseException {
+//                value = Objects.requireNonNullElse(value, 0);
+//                return ((Integer)value).toString();
+//            }
+//        });
+        timeGenerationValue = new JTextField("5");
+//        timeGenerationValue.setValue(5);
         add(timeGenerationValue);
 
 
@@ -53,7 +54,7 @@ public class TransportSettingPanel extends JPanel {
     }
 
     int getTimeGeneration() {
-        return (int) timeGenerationValue.getValue();
+        return Integer.parseInt(timeGenerationValue.getText())*1000;
     }
 
     int getProbability() { return probabilityValue.getValue(); }

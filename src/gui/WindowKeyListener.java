@@ -1,6 +1,7 @@
 package gui;
 
 import logic.Habitat;
+import logic.Main;
 
 import java.awt.event.*;
 
@@ -20,7 +21,7 @@ public class WindowKeyListener implements KeyListener {
             case KeyEvent.VK_E -> Habitat.instance().stopSimulation();
             case KeyEvent.VK_T -> WindowMain.Instance().setShowSimulationTime(!WindowMain.Instance().getShowSimulationTime());
         }
-        System.out.println(e.getKeyCode());
+        Main.printLog(Integer.toString(e.getKeyCode()));
     }
 
     @Override

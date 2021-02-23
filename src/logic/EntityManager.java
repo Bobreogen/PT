@@ -25,6 +25,8 @@ public class EntityManager {
         entityList.put(entity.getName(), entity);
         EntityEvent entityEvent = new EntityEvent(EntityEvent.Actions.ENTITY_ADD, entity);
         listeners.forEach(x -> x.actionPerformed(entityEvent));
+
+        Main.printLog("Entity added: " + entity.getName());
     }
 
     public void removeEntity(Entity entity) {
