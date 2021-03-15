@@ -15,8 +15,18 @@ public class EntityFactory {
         Entity entity = null;
 
         switch (vp.vehicleType) {
-            case CAR -> entity = new Car();
-            case TRUCK -> entity = new Truck();
+            case CAR -> {
+                entity = new Car();
+                entity.setSizeX(30);
+                entity.setSizeY(30);
+                ((Vehicle)entity).setLifeTime(vp.lifeTime);
+            }
+            case TRUCK -> {
+                entity = new Truck();
+                entity.setSizeX(30);
+                entity.setSizeY(30);
+                ((Vehicle)entity).setLifeTime(vp.lifeTime);
+            }
         }
 
         return entity;

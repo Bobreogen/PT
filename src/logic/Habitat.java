@@ -10,8 +10,10 @@ import static logic.SimulationEvent.Actions.*;
 public class Habitat {
 
     private final HashMap<VehicleType, VehicleProperty> vehiclePropertyMap = new HashMap<>();
-    private final ArrayList<Vehicle> vehicleList = new ArrayList<>();
     private final HashMap<VehicleType, EntityFactory> vehicleFactoryMap = new HashMap<>();
+    private final ArrayList<Vehicle> vehicleList = new ArrayList<>();
+    private final TreeSet<UUID> vehicleIDSet = new TreeSet<>();
+    private final TreeMap<Long, Vehicle> vehicleCreatedTimeMap = new TreeMap<>();
 
     private int workspaceX = 0;
     private int workspaceY = 0;
@@ -42,8 +44,18 @@ public class Habitat {
         Vehicle vehicle = entity instanceof Vehicle ? ((Vehicle) entity) : null;
         if (vehicle != null) {
             vehicle.setPosition((int)(Math.random()*workspaceX), (int)(Math.random()*workspaceY));
+            vehicle.setCreatedTime(simulationTime);
 
             vehicleList.add(vehicle);
+            vehicleIDSet.add(vehicle.getId());
+
+            long createdTime = vehicle.getCreatedTime();
+            while(vehicleCreatedTimeMap.containsKey(createdTime))
+            {
+                createdTime++;
+            }
+            vehicleCreatedTimeMap.put(createdTime, vehicle);
+
             Main.printLog("Vehicle added: " + vehicle.getName());
             Main.printLog("Vehicle position: " + vehicle.getPositionX() + " " + vehicle.getPositionY());
         }
@@ -53,6 +65,8 @@ public class Habitat {
         Vehicle vehicle = entity instanceof Vehicle ? ((Vehicle) entity) : null;
         if (vehicle != null) {
             vehicleList.remove(vehicle);
+            vehicleIDSet.remove(vehicle.getId());
+            vehicleCreatedTimeMap.remove(vehicle.getCreatedTime(), vehicle);
         }
     }
 
@@ -98,6 +112,14 @@ public class Habitat {
         SimulationEvent event = new SimulationEvent(SIMULATION_STOP);
         listeners.forEach(x -> x.actionPerformed(event));
         simulationTime = 0;
+
+        var it = vehicleList.iterator();
+        while(it.hasNext()) {
+            var vehicle = it.next();
+            it.remove();
+            EntityManager.instance().removeEntity(vehicle);
+        }
+
         Main.printLog("Simulation stop");
     }
 
@@ -120,8 +142,26 @@ public class Habitat {
             return;
 
         vehicleFactoryMap.forEach((vehicleType, entityFactory) -> entityFactory.onFrame(dt));
+        vehicleList.forEach(vehicle -> vehicle.onFrame(dt));
 
         simulationTime += dt;
+
+        checkLifeTime();
+    }
+
+    private void checkLifeTime() {
+        var it = vehicleList.iterator();
+        while(it.hasNext()) {
+            var vehicle = it.next();
+            if (vehicle.getCreatedTime() + vehicle.getLifeTime() < simulationTime) {
+                it.remove();
+                EntityManager.instance().removeEntity(vehicle);
+            }
+        }
+    }
+
+    public TreeMap<Long, Vehicle> getVehicleCreatedTimeMap() {
+        return vehicleCreatedTimeMap;
     }
 
     public void addListener(ActionListener listener) {

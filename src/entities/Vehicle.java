@@ -1,22 +1,32 @@
 package entities;
 
-public class Vehicle extends Entity{
-    int x, y;
+public abstract class Vehicle extends Entity implements IBehaviour {
+    private long createdTime;
+    private long lifeTime;
+
+    public Vehicle(String name, long createdTime, long lifeTime) {
+        super(name);
+        this.createdTime = createdTime;
+        this.lifeTime = lifeTime;
+    }
 
     public Vehicle(String name) {
         super(name);
     }
 
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public long getCreatedTime() {
+        return createdTime;
     }
 
-    public int getPositionX() { return x; }
-    public int getPositionY() { return y; }
+    public void setCreatedTime(long createdTime) {
+        this.createdTime = createdTime;
+    }
 
-    @Override
-    public void onFrame(long dt) {
+    public long getLifeTime() {
+        return lifeTime;
+    }
 
+    public void setLifeTime(long lifeTime) {
+        this.lifeTime = lifeTime;
     }
 }

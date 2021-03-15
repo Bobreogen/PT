@@ -2,42 +2,21 @@ package gui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.ParseException;
-import java.util.Objects;
 
 public class TransportSettingPanel extends JPanel {
     private final JTextField timeGenerationValue;
     private final JSlider probabilityValue;
-
+    private final JTextField lifeTimeValue;
 
     TransportSettingPanel(String name) {
-        setLayout(new GridLayout(5,1,0,5));
+        setLayout(new GridLayout(7,1,0,5));
         JLabel nameText = new JLabel(name);
         nameText.setFont(new Font("Arial",Font.BOLD,16));
         add(nameText);
         JLabel timeToGenerationText = new JLabel("Период генерации (сек)");
         add(timeToGenerationText);
 
-//        timeGenerationValue = new JFormattedTextField(new JFormattedTextField.AbstractFormatter() {
-//            @Override
-//            public Object stringToValue(String text) throws ParseException {
-//                try{
-//                    return Integer.valueOf(text);
-//                } catch (Exception e) {
-//                    ParseException parseException = new ParseException("", 0);
-//                    parseException.addSuppressed(e);
-//                    throw parseException;
-//                }
-//            }
-//
-//            @Override
-//            public String valueToString(Object value) throws ParseException {
-//                value = Objects.requireNonNullElse(value, 0);
-//                return ((Integer)value).toString();
-//            }
-//        });
-        timeGenerationValue = new JTextField("5");
-//        timeGenerationValue.setValue(5);
+        timeGenerationValue = new JTextField("2");
         add(timeGenerationValue);
 
 
@@ -49,19 +28,51 @@ public class TransportSettingPanel extends JPanel {
         probabilityValue.setMajorTickSpacing(50);
         probabilityValue.setSnapToTicks(true);
         probabilityValue.setFocusable(false);
-
         add(probabilityValue);
+
+        JLabel lifeTimeText = new JLabel("Время жизни (сек)");
+        add(lifeTimeText);
+        lifeTimeValue = new JTextField("5");
+        add(lifeTimeValue);
+
     }
 
     int getTimeGeneration() {
-        return Integer.parseInt(timeGenerationValue.getText())*1000;
+        if (numberValidation(timeGenerationValue.getText()) && Integer.parseInt(timeGenerationValue.getText()) > 0)
+            return Integer.parseInt(timeGenerationValue.getText())*1000;
+        else {
+            JOptionPane.showMessageDialog(this, "Неправильно установленное значение, выставлено значение по умолчанию");
+            timeGenerationValue.setText("2");
+            return 2000;
+        }
     }
 
     int getProbability() { return probabilityValue.getValue(); }
 
+    boolean numberValidation(String text) {
+        try {
+            Integer.parseInt(text);
+            return true;
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    public long getLifeTime() {
+        if (numberValidation(lifeTimeValue.getText()) && Long.parseLong(lifeTimeValue.getText()) > 0)
+            return Long.parseLong(lifeTimeValue.getText())*1000;
+        else {
+            JOptionPane.showMessageDialog(this, "Неправильно установленное значение, выставлено значение по умолчанию");
+            lifeTimeValue.setText("5");
+            return 5000;
+        }
+    }
+
+    @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         timeGenerationValue.setEnabled(enabled);
         probabilityValue.setEnabled(enabled);
+        lifeTimeValue.setEnabled(enabled);
     }
 }
