@@ -2,6 +2,8 @@ package logic;
 
 import entities.*;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 public class StatisticsCollector {

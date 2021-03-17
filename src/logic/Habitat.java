@@ -1,5 +1,6 @@
 package logic;
 
+import AI.AIManager;
 import entities.*;
 
 import java.awt.event.ActionListener;
@@ -142,7 +143,8 @@ public class Habitat {
             return;
 
         vehicleFactoryMap.forEach((vehicleType, entityFactory) -> entityFactory.onFrame(dt));
-        vehicleList.forEach(vehicle -> vehicle.onFrame(dt));
+
+        AIManager.instance().onFrame(dt);
 
         simulationTime += dt;
 

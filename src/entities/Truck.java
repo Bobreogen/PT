@@ -11,10 +11,4 @@ public class Truck extends Vehicle {
         super(name);
         truckCreationCount++;
     }
-
-    @Override
-    public void onFrame(long dt) {
-
-    }
-
 }

@@ -1,6 +1,6 @@
 package entities;
 
-public abstract class Vehicle extends Entity implements IBehaviour {
+public abstract class Vehicle extends Entity {
     private long createdTime;
     private long lifeTime;
 

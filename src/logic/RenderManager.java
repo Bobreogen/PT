@@ -1,7 +1,6 @@
 package logic;
 
 import entities.*;
-import gui.GraphicsEntity;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
