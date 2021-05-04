@@ -144,8 +144,6 @@ public class Habitat {
 
         vehicleFactoryMap.forEach((vehicleType, entityFactory) -> entityFactory.onFrame(dt));
 
-        AIManager.instance().onFrame(dt);
-
         simulationTime += dt;
 
         checkLifeTime();

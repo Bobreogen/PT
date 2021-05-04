@@ -1,5 +1,6 @@
 package gui;
 
+import AI.AIManager;
 import entities.*;
 import logic.*;
 
@@ -42,11 +43,6 @@ public class WindowMain extends JFrame {
         super();
         initConfig();
         initComponents();
-        (new Timer(1000/30, evt -> update())).start();
-    }
-
-    public void start() {
-        setVisible(true);
     }
 
     private void showInfo() {
@@ -122,7 +118,7 @@ public class WindowMain extends JFrame {
     }
 
     private void initButtonPanel() {
-        buttonPanel = new JPanel(new GridLayout(3,2, 10, 10));
+        buttonPanel = new JPanel(new GridLayout(4,2, 10, 10));
         settingsPanel.add(buttonPanel);
 
         JButton startSimulationButton = new JButton("Старт симуляции");
@@ -158,6 +154,34 @@ public class WindowMain extends JFrame {
         showActiveVehicleButton.setFocusable(false);
         buttonPanel.add(showActiveVehicleButton);
         showActiveVehicleButton.addActionListener(evt -> showActiveVehicle());
+
+        JToggleButton CarAI = new JToggleButton("Остановить ИИ легковых", false);
+        buttonPanel.add(CarAI);
+        CarAI.addItemListener(e -> {
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                CarAI.setText("Возобновить ИИ легковых");
+                AIManager.instance().StopAIForVehicleType(VehicleType.CAR);
+            }
+            else {
+                CarAI.setText("Остановить ИИ легковых");
+                AIManager.instance().StartAIForVehicleType(VehicleType.CAR);
+            }
+        });
+        CarAI.setFocusable(false);
+
+        JToggleButton TruckAI = new JToggleButton("Остановить ИИ грузовых", false);
+        buttonPanel.add(TruckAI);
+        TruckAI.addItemListener(e -> {
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                TruckAI.setText("Возобновить ИИ грузовых");
+                AIManager.instance().StopAIForVehicleType(VehicleType.TRUCK);
+            }
+            else {
+                TruckAI.setText("Остановить ИИ грузовых");
+                AIManager.instance().StartAIForVehicleType(VehicleType.TRUCK);
+            }
+        });
+        TruckAI.setFocusable(false);
 
         Habitat.instance().addListener(e -> {
             if (e.getClass() == SimulationEvent.class) {
@@ -207,12 +231,8 @@ public class WindowMain extends JFrame {
         simulationPanel.add(simulationTimeLabel);
     }
 
-    void update() {
-        long curTime = System.currentTimeMillis();
-        long dt = curTime - systemTime;
-        systemTime = curTime;
-        Habitat.instance().onFrame(dt);
-
+    public void onFrame(long dt) {
+        setVisible(true);
         simulationTimeLabel.setVisible(showSimulationTime);
         simulationTimeLabel.setText(new SimpleDateFormat("mm:ss").format(new Date(Habitat.instance().getSimulationTime())));
         simulationPanel.repaint();

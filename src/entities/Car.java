@@ -11,4 +11,6 @@ public class Car extends Vehicle {
         super(name);
         carCreationCount++;
     }
+
+    public VehicleType getVehicleType() { return VehicleType.CAR; }
 }

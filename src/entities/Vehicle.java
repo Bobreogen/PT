@@ -29,4 +29,6 @@ public abstract class Vehicle extends Entity {
     public void setLifeTime(long lifeTime) {
         this.lifeTime = lifeTime;
     }
+
+    public VehicleType getVehicleType() { return VehicleType.NONE; }
 }

@@ -11,4 +11,6 @@ public class Truck extends Vehicle {
         super(name);
         truckCreationCount++;
     }
+
+    public VehicleType getVehicleType() { return VehicleType.TRUCK; }
 }

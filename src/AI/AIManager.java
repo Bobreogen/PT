@@ -2,13 +2,20 @@ package AI;
 import entities.Car;
 import entities.Entity;
 import entities.Truck;
+import entities.VehicleType;
+import logic.ApplicationManager;
 import logic.EntityEvent;
 import logic.EntityManager;
 
 import java.util.ArrayList;
 
 public class AIManager {
-    private final ArrayList<AIEntity> AIEntityList = new ArrayList<>();
+    private final ArrayList<AIEntity> AICarList = new ArrayList<>();
+    private final ArrayList<AIEntity> AITruckList = new ArrayList<>();
+    private final Thread AICar;
+    private final Thread AITruck;
+    private boolean isTruckAISleep = false;
+    private boolean isCarAISleep = false;
 
     private enum Instances {
         INSTANCE(new AIManager());
@@ -28,6 +35,39 @@ public class AIManager {
                 }
             }
         });
+        AICar = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    synchronized (this) {
+                        while (true) {
+                            AICarList.forEach(AIEntity -> AIEntity.getBehavior().onFrame(ApplicationManager.getFrameTime()));
+                            this.wait();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        AITruck = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    synchronized (this) {
+                        while (true) {
+                            AITruckList.forEach(AIEntity -> AIEntity.getBehavior().onFrame(ApplicationManager.getFrameTime()));
+                            this.wait();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        AICar.start();
+        AITruck.start();
     }
 
     private void entityAdd(Entity entity) {
@@ -45,26 +85,45 @@ public class AIManager {
         aiBehavior.setTargetY(0);
         aiBehavior.setVelocity(100);
         aiEntity.setBehavior(aiBehavior);
-        AIEntityList.add(aiEntity);
+        AICarList.add(aiEntity);
     }
 
     private void CreateAIEntityTruck(Entity entity) {
         var aiEntity = new AIEntity();
         var aiBehavior = new GoToPositionStrategy();
         aiBehavior.setOwner(entity);
-        aiBehavior.setTargetX(550);
-        aiBehavior.setTargetY(550);
+        aiBehavior.setTargetX(200);
+        aiBehavior.setTargetY(200);
         aiBehavior.setVelocity(1000);
         aiEntity.setBehavior(aiBehavior);
-        AIEntityList.add(aiEntity);
+        AITruckList.add(aiEntity);
     }
 
-    private void entityRemove(Entity entity) {
-        AIEntityList.removeIf(AIEntity -> AIEntity.getEntity() == entity);
+    public void StartAIForVehicleType(VehicleType vt) {
+        switch (vt) {
+            case CAR -> isCarAISleep = false;
+            case TRUCK -> isTruckAISleep = false;
+
+        }
     }
 
-    public void onFrame(long dt) {
-        AIEntityList.forEach(AIEntity -> AIEntity.getBehavior().onFrame(dt));
+    public void StopAIForVehicleType(VehicleType vt) {
+        switch (vt) {
+            case CAR -> isCarAISleep = true;
+            case TRUCK -> isTruckAISleep = true;
+
+        }
+    }
+
+    private void entityRemove(Entity entity)
+    {
+        AICarList.removeIf(AIEntity -> AIEntity.getEntity() == entity);
+        AITruckList.removeIf(AIEntity -> AIEntity.getEntity() == entity);
+    }
+
+    public synchronized void onFrame(long dt) {
+        if(!isCarAISleep) synchronized(AICar) { AICar.notify(); }
+        if(!isTruckAISleep) synchronized(AITruck) { AITruck.notify(); }
     }
 
     public static AIManager instance() { return AIManager.Instances.INSTANCE.aIManager; }
