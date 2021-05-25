@@ -6,6 +6,7 @@ import entities.VehicleType;
 import logic.ApplicationManager;
 import logic.EntityEvent;
 import logic.EntityManager;
+import logic.Habitat;
 
 import java.util.ArrayList;
 
@@ -81,8 +82,14 @@ public class AIManager {
         var aiEntity = new AIEntity();
         var aiBehavior = new GoToPositionStrategy();
         aiBehavior.setOwner(entity);
-        aiBehavior.setTargetX(0);
-        aiBehavior.setTargetY(0);
+        if(entity.getPositionX() <= Habitat.instance().getWorkspacePositionX()/2 && entity.getPositionY() <= Habitat.instance().getWorkspacePositionY()/2) {
+            aiBehavior.setTargetX(entity.getPositionX());
+            aiBehavior.setTargetY(entity.getPositionY());
+        }
+        else {
+            aiBehavior.setTargetX((int) (Math.random() / 2 * Habitat.instance().getWorkspacePositionX()));
+            aiBehavior.setTargetY((int) (Math.random() / 2 * Habitat.instance().getWorkspacePositionY()));
+        }
         aiBehavior.setVelocity(100);
         aiEntity.setBehavior(aiBehavior);
         AICarList.add(aiEntity);
@@ -92,9 +99,15 @@ public class AIManager {
         var aiEntity = new AIEntity();
         var aiBehavior = new GoToPositionStrategy();
         aiBehavior.setOwner(entity);
-        aiBehavior.setTargetX(200);
-        aiBehavior.setTargetY(200);
-        aiBehavior.setVelocity(1000);
+        if(entity.getPositionX() >= Habitat.instance().getWorkspacePositionX()/2 && entity.getPositionY() >= Habitat.instance().getWorkspacePositionY()/2) {
+            aiBehavior.setTargetX(entity.getPositionX());
+            aiBehavior.setTargetY(entity.getPositionY());
+        }
+        else {
+            aiBehavior.setTargetX((int) ((0.5 + Math.random() / 2) * Habitat.instance().getWorkspacePositionX()));
+            aiBehavior.setTargetY((int) ((0.5 + Math.random() / 2) * Habitat.instance().getWorkspacePositionY()));
+        }
+        aiBehavior.setVelocity(150);
         aiEntity.setBehavior(aiBehavior);
         AITruckList.add(aiEntity);
     }

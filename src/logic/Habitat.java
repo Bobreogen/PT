@@ -44,7 +44,8 @@ public class Habitat {
     private void entityAdd(Entity entity) {
         Vehicle vehicle = entity instanceof Vehicle ? ((Vehicle) entity) : null;
         if (vehicle != null) {
-            vehicle.setPosition((int)(Math.random()*workspaceX), (int)(Math.random()*workspaceY));
+            vehicle.setPositionX((int)(Math.random()*workspaceX));
+            vehicle.setPositionY((int)(Math.random()*workspaceY));
             vehicle.setCreatedTime(simulationTime);
 
             vehicleList.add(vehicle);
@@ -88,6 +89,9 @@ public class Habitat {
         workspaceX = x;
         workspaceY = y;
     }
+
+    public int getWorkspacePositionX() { return workspaceX; }
+    public int getWorkspacePositionY() { return workspaceY; }
 
     public void startSimulation(){
         if(currentState == state.START)

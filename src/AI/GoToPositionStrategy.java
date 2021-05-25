@@ -13,11 +13,15 @@ public class GoToPositionStrategy extends AIBehavior {
 
     @Override
     public void onFrame(long dt) {
-        if(abs(targetX - owner.getPositionX()) < 10 && abs(targetY - owner.getPositionY()) < 10)
-            return;
-        int dtInt = (int)dt;
-        owner.setPosition(targetX > owner.getPositionX() ? owner.getPositionX() + velocity*dtInt/1000 : owner.getPositionX() - velocity*dtInt/1000
-                , targetY > owner.getPositionY() ? owner.getPositionY() + velocity*dtInt/1000 : owner.getPositionY() - velocity*dtInt/1000);
+        float dtInt = (float)dt/1000;
+        if(abs(targetX - owner.getPositionX()) < velocity*dtInt)
+            owner.setPositionX(targetX);
+        else
+            owner.setPositionX(targetX > owner.getPositionX() ? owner.getPositionX() + (int)(velocity*dtInt) : owner.getPositionX() - (int)(velocity*dtInt));
+        if(abs(targetY - owner.getPositionY()) < velocity*dtInt)
+            owner.setPositionY(targetY);
+        else
+            owner.setPositionY(targetY > owner.getPositionY() ? owner.getPositionY() + (int)(velocity*dtInt) : owner.getPositionY() - (int)(velocity*dtInt));
     }
 
     public int getTargetX() {
