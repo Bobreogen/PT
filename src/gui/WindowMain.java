@@ -5,11 +5,14 @@ import entities.*;
 import logic.*;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class WindowMain extends JFrame {
 
@@ -66,6 +69,7 @@ public class WindowMain extends JFrame {
 
         setFocusable(true);
         requestFocusInWindow();
+        setVisible(true);
 
         StatisticsCollector.instance().reset();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -93,6 +97,25 @@ public class WindowMain extends JFrame {
         JMenuItem stopSimulation = new JMenuItem("Остановить симуляцию");
         stopSimulation.addActionListener(e -> stopSimulation());
         simulationMenu.add(stopSimulation);
+
+        JMenu consoleMenu = new JMenu("Консоль");
+        menuBar.add(consoleMenu);
+
+        consoleMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                new Console();
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
+
     }
 
     private void initToolsBar() {
@@ -118,7 +141,7 @@ public class WindowMain extends JFrame {
     }
 
     private void initButtonPanel() {
-        buttonPanel = new JPanel(new GridLayout(4,2, 10, 10));
+        buttonPanel = new JPanel(new GridLayout(6,2, 10, 10));
         settingsPanel.add(buttonPanel);
 
         JButton startSimulationButton = new JButton("Старт симуляции");
@@ -183,6 +206,21 @@ public class WindowMain extends JFrame {
         });
         TruckAI.setFocusable(false);
 
+        String[] PriorityArray = IntStream.range(1, 10).mapToObj(String::valueOf).toArray(String[]::new);
+
+        buttonPanel.add(new JLabel("Приоритет легкового транспорта"));
+        buttonPanel.add(new JLabel("Приоритет грузового транспорта"));
+        JComboBox<String> CarAIPriority = new JComboBox<>(PriorityArray);
+        CarAIPriority.setSelectedItem(Integer.toString(AIManager.instance().GetAIPriorityForVehicleType(VehicleType.CAR)));
+        CarAIPriority.addActionListener(e -> AIManager.instance().SetAIPriorityForVehicleType(VehicleType.CAR, Integer.parseInt((String)CarAIPriority.getSelectedItem())));
+        CarAIPriority.setFocusable(false);
+        buttonPanel.add(CarAIPriority);
+        JComboBox<String> TruckAIPriority = new JComboBox<>(PriorityArray);
+        TruckAIPriority.setSelectedItem(Integer.toString(AIManager.instance().GetAIPriorityForVehicleType(VehicleType.TRUCK)));
+        TruckAIPriority.addActionListener(e -> AIManager.instance().SetAIPriorityForVehicleType(VehicleType.TRUCK, Integer.parseInt((String)TruckAIPriority.getSelectedItem())));
+        TruckAIPriority.setFocusable(false);
+        buttonPanel.add(TruckAIPriority);
+
         Habitat.instance().addListener(e -> {
             if (e.getClass() == SimulationEvent.class) {
                 switch (((SimulationEvent) e).getAction()) {
@@ -232,7 +270,6 @@ public class WindowMain extends JFrame {
     }
 
     public void onFrame(long dt) {
-        setVisible(true);
         simulationTimeLabel.setVisible(showSimulationTime);
         simulationTimeLabel.setText(new SimpleDateFormat("mm:ss").format(new Date(Habitat.instance().getSimulationTime())));
         simulationPanel.repaint();

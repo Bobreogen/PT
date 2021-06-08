@@ -128,6 +128,22 @@ public class AIManager {
         }
     }
 
+    public int GetAIPriorityForVehicleType(VehicleType vt) {
+        int priority = 0;
+        switch (vt) {
+            case CAR -> priority = AICar.getPriority();
+            case TRUCK -> priority = AITruck.getPriority();
+        }
+        return priority;
+    }
+
+    public void SetAIPriorityForVehicleType(VehicleType vt, int priority) {
+        switch (vt) {
+            case CAR -> AICar.setPriority(priority);
+            case TRUCK -> AITruck.setPriority(priority);
+        }
+    }
+
     private void entityRemove(Entity entity)
     {
         AICarList.removeIf(AIEntity -> AIEntity.getEntity() == entity);
