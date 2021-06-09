@@ -1,6 +1,7 @@
 package gui;
 
 import AI.AIManager;
+import config.ConfigManager;
 import entities.*;
 import logic.*;
 
@@ -9,7 +10,9 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -25,8 +28,11 @@ public class WindowMain extends JFrame {
     private JPanel buttonPanel;
     private JToggleButton showSimulationTimeToggle;
     private JToggleButton hideSimulationTimeToggle;
+    private JToggleButton showInformationToggleButton;
     private JLabel simulationTimeLabel;
     private boolean showInfo = false;
+    private boolean isInit = false;
+
     private boolean showSimulationTime = false;
     private long systemTime = 0;
 
@@ -46,6 +52,42 @@ public class WindowMain extends JFrame {
         super();
         initConfig();
         initComponents();
+        addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+            }
+
+            @Override
+            public void windowClosing(WindowEvent event) {
+                ConfigManager.SaveHabitatConfig();
+                System.exit(0);
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+
+            }
+        });
     }
 
     private void showInfo() {
@@ -80,7 +122,8 @@ public class WindowMain extends JFrame {
         initToolsBar();
         initSettingsPanel();
         initSimulationPanel();
-        pack();
+
+        Habitat.instance().setWorkspacePosition(simulationPanel.getSize().width, simulationPanel.getSize().height);
     }
 
     private void initMenu() {
@@ -137,11 +180,10 @@ public class WindowMain extends JFrame {
         add(settingsPanel, BorderLayout.NORTH);
 
         initButtonPanel();
-        initTransportPanel();
     }
 
     private void initButtonPanel() {
-        buttonPanel = new JPanel(new GridLayout(6,2, 10, 10));
+        buttonPanel = new JPanel(new GridLayout(7,2, 10, 10));
         settingsPanel.add(buttonPanel);
 
         JButton startSimulationButton = new JButton("Старт симуляции");
@@ -168,7 +210,7 @@ public class WindowMain extends JFrame {
         showSimulationTimeToggle.addItemListener(evt -> setShowSimulationTime(evt.getStateChange() == ItemEvent.SELECTED));
         hideSimulationTimeToggle.addItemListener(evt -> setShowSimulationTime(evt.getStateChange() != ItemEvent.SELECTED));
 
-        JToggleButton showInformationToggleButton = new JToggleButton("Показывать информацию", false);
+        showInformationToggleButton = new JToggleButton("Показывать информацию", false);
         showInformationToggleButton.setFocusable(false);
         buttonPanel.add(showInformationToggleButton);
         showInformationToggleButton.addItemListener(evt -> showInfo = evt.getStateChange() == ItemEvent.SELECTED);
@@ -221,6 +263,45 @@ public class WindowMain extends JFrame {
         TruckAIPriority.setFocusable(false);
         buttonPanel.add(TruckAIPriority);
 
+        JMenuItem loadMenuItem = new JMenuItem("Загрузить");
+        loadMenuItem.addActionListener(actionEvent -> {
+            startSimulation();
+            Habitat.instance().pauseSimulation();
+
+            JFileChooser fc = new JFileChooser();
+            fc.showOpenDialog(null);
+            File file = fc.getSelectedFile();
+            ;
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                for(var entity : (ArrayList<Vehicle>) ois.readObject()){
+                    EntityManager.instance().addEntity(entity);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            Habitat.instance().startSimulation();
+        });
+        buttonPanel.add(loadMenuItem);
+
+        JMenuItem saveMenuItem = new JMenuItem("Сохранить");
+        saveMenuItem.addActionListener(actionEvent -> {
+            Habitat.instance().pauseSimulation();
+
+            JFileChooser fc = new JFileChooser();
+            fc.showSaveDialog(null);
+            File file = fc.getSelectedFile();
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file, false));){
+                oos.writeObject(Habitat.instance().getVehicleList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Habitat.instance().startSimulation();
+        });
+        buttonPanel.add(saveMenuItem);
+
+
         Habitat.instance().addListener(e -> {
             if (e.getClass() == SimulationEvent.class) {
                 switch (((SimulationEvent) e).getAction()) {
@@ -245,9 +326,9 @@ public class WindowMain extends JFrame {
         JPanel transportPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 20, 0));
         settingsPanel.add(transportPanel);
 
-        truckPanel = new TransportSettingPanel("Грузовой транспорт");
+        truckPanel = new TransportSettingPanel("Грузовой транспорт", VehicleType.TRUCK);
         transportPanel.add(truckPanel);
-        carPanel = new TransportSettingPanel("Легковой транспорт");
+        carPanel = new TransportSettingPanel("Легковой транспорт", VehicleType.CAR);
         transportPanel.add(carPanel);
     }
 
@@ -270,6 +351,13 @@ public class WindowMain extends JFrame {
     }
 
     public void onFrame(long dt) {
+        if(!isInit)
+        {
+            ConfigManager.LoadHabitatConfig();
+            initTransportPanel();
+            pack();
+            isInit = true;
+        }
         simulationTimeLabel.setVisible(showSimulationTime);
         simulationTimeLabel.setText(new SimpleDateFormat("mm:ss").format(new Date(Habitat.instance().getSimulationTime())));
         simulationPanel.repaint();
@@ -293,7 +381,7 @@ public class WindowMain extends JFrame {
             Habitat.instance().stopSimulation();
     }
 
-    void setShowSimulationTime(boolean show) {
+    public void setShowSimulationTime(boolean show) {
         if(showSimulationTime == show)
             return;
 
@@ -303,9 +391,7 @@ public class WindowMain extends JFrame {
         Main.printLog(show ? "Show simulation time" : "Hide simulation time");
     }
 
-    boolean getShowSimulationTime() {
-        return showSimulationTime;
-    }
+
 
     void showActiveVehicle()
     {
@@ -318,4 +404,12 @@ public class WindowMain extends JFrame {
         }
         JOptionPane.showMessageDialog(this, text, "Текущие объекты", JOptionPane.INFORMATION_MESSAGE, null);
     }
+
+    public boolean getShowInfo() { return showInfo; }
+    public void setShowInfo(boolean showInfo) {
+        this.showInfo = showInfo;
+        showInformationToggleButton.setSelected(showInfo);
+    }
+    public boolean getShowSimulationTime() { return showSimulationTime; }
+
 }

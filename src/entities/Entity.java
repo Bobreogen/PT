@@ -47,4 +47,9 @@ public class Entity {
         this.name = name;
         this.id = UUID.randomUUID();
     }
+
+    Entity() {
+        this.name = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID();
+    }
 }

@@ -1,6 +1,5 @@
 package logic;
 
-import AI.AIManager;
 import entities.*;
 
 import java.awt.event.ActionListener;
@@ -39,6 +38,8 @@ public class Habitat {
                 }
             }
         });
+        vehiclePropertyMap.put(VehicleType.CAR,new VehicleProperty(VehicleType.CAR,1000,1,1000));
+        vehiclePropertyMap.put(VehicleType.TRUCK,new VehicleProperty(VehicleType.TRUCK,1000,1,1000));
     }
 
     private void entityAdd(Entity entity) {
@@ -150,19 +151,30 @@ public class Habitat {
 
         simulationTime += dt;
 
-        checkLifeTime();
+        processLifeTime(dt);
     }
 
-    private void checkLifeTime() {
+    private void processLifeTime(long dt) {
         var it = vehicleList.iterator();
         while(it.hasNext()) {
             var vehicle = it.next();
-            if (vehicle.getCreatedTime() + vehicle.getLifeTime() < simulationTime) {
+            vehicle.setLifeTime(vehicle.getLifeTime() - dt);
+            if (vehicle.getLifeTime() <= 0) {
                 it.remove();
                 EntityManager.instance().removeEntity(vehicle);
             }
         }
     }
+
+    public ArrayList<Vehicle> getVehicleList() { return vehicleList; }
+
+    public boolean IsPauseSimulation() { return currentState == state.PAUSE;}
+    public long getTimeGenerationByType(VehicleType type) { return vehiclePropertyMap.get(type).timeGeneration; }
+    public void setTimeGenerationByType(VehicleType type, long timeGeneration) { vehiclePropertyMap.get(type).timeGeneration = timeGeneration; }
+    public long getLifeTimeByType(VehicleType type) { return vehiclePropertyMap.get(type).lifeTime; }
+    public void setLifeTimeByType(VehicleType type, long lifeTime) { vehiclePropertyMap.get(type).lifeTime = lifeTime; }
+    public int getGenerateProbabilityByType(VehicleType type) { return vehiclePropertyMap.get(type).generateProbability; }
+    public void setGenerateProbabilityByType(VehicleType type, int generateProbability) { vehiclePropertyMap.get(type).generateProbability = generateProbability; }
 
     public TreeMap<Long, Vehicle> getVehicleCreatedTimeMap() {
         return vehicleCreatedTimeMap;

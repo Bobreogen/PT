@@ -151,6 +151,7 @@ public class AIManager {
     }
 
     public synchronized void onFrame(long dt) {
+        if(Habitat.instance().IsPauseSimulation()) return;
         if(!isCarAISleep) synchronized(AICar) { AICar.notify(); }
         if(!isTruckAISleep) synchronized(AITruck) { AITruck.notify(); }
     }

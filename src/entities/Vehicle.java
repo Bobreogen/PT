@@ -1,8 +1,14 @@
 package entities;
 
-public abstract class Vehicle extends Entity {
-    private long createdTime;
-    private long lifeTime;
+import java.io.Serializable;
+
+public abstract class Vehicle extends Entity implements Serializable {
+    private long createdTime = 0;
+    private long lifeTime = 5000;
+
+    public Vehicle() {
+        super();
+    }
 
     public Vehicle(String name, long createdTime, long lifeTime) {
         super(name);
