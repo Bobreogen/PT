@@ -1,69 +1,100 @@
 package Net;
 
+import entities.Car;
+import entities.Vehicle;
+import gui.ClientWindow;
+import gui.WindowMain;
+import logic.EntityManager;
+import logic.Habitat;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class Client extends Thread {
-/*    private static final LinkedList<String> usersList = new LinkedList<>();
-    private final String configDirectory = "src/ConfigFiles/" + MainWindow.userName;
+public class Client {
+    private static LinkedList<String> usersList = new LinkedList<>();
+    private static Socket socket;
+    private static DataInputStream inStream;
+    private static DataOutputStream outStream;
+    private static Socket objectSocket;
+    private static ObjectInputStream objectInStream;
+    private static ObjectOutputStream objectOutStream;
 
-    private ConfigActions config = new ConfigActions();
     public Client() {
+        try {
+            socket = new Socket("127.0.0.1", 6666);
+            objectSocket = new Socket("127.0.0.1", 6665);
+
+            inStream = new DataInputStream(socket.getInputStream());
+            outStream = new DataOutputStream(socket.getOutputStream());
+            objectOutStream = new ObjectOutputStream(objectSocket.getOutputStream());
+            objectInStream = new ObjectInputStream(objectSocket.getInputStream());
+            outStream.writeUTF(WindowMain.Instance().getUserName());
+            outStream.flush();
+        } catch (Exception e) { e.printStackTrace(); }
+
         Thread client = new Thread(() -> {
             try {
                 while (true) {
                     System.out.println("here");
-                    String action = MainWindow.inStream.readUTF();
+                    String action = inStream.readUTF();
                     switch (action) {
                         case "update": {
                             System.out.println("update start");
                             usersList.clear();
-                            MainWindow.clients.removeAllItems();
-                            int size = MainWindow.inStream.readInt();
+                            int size = inStream.readInt();
                             for (int i = 0; i < size; i++) {
-                                usersList.addLast(MainWindow.inStream.readUTF());
-                                MainWindow.clients.addItem(usersList.get(i));
+                                usersList.addLast(inStream.readUTF());
                             }
-
-                            if (size > 0)
-                                MainWindow.clients.setSelectedItem(0);
                             System.out.println("update end");
                             System.out.println(usersList);
 
                             break;
                         }
-
-                        case "request": {
-                            System.out.println("start req");
-                            String bufFile = configDirectory + "/buf.txt";
-                            new File(bufFile).deleteOnExit();
-                            config.writeConfig(bufFile);
-                            String target = MainWindow.inStream.readUTF();
-                            MainWindow.outStream.writeUTF("answer");
-                            MainWindow.outStream.writeUTF(target);
-                            MainWindow.outStream.writeUTF(bufFile);
-                            System.out.println("end req");
-                            break;
+                        case "sendCars" : {
+                            sendCars();
+                            getCars();
                         }
 
-                        case "accept": {
-                            String data = MainWindow.inStream.readUTF();
-                            config.readConfig(data);
-                            break;
-                        }
                     }
                 }
-            } catch (IOException e) {
-                MainWindow.sendButton.setEnabled(false);
-                MainWindow.clients.removeAllItems();
-                MainWindow.clients.setEnabled(false);
-                MainWindow.serverActButton.setText("Подключиться");
-                MainWindow.isConnected = false;
-            }
+            } catch (Exception e) { e.printStackTrace(); }
         });
 
-        client.setDaemon(true);
-        client.setName("Client updater");
+        client.setName("Client entity");
         client.start();
     }
-*/
+
+    public static void sendCars() {
+        var carList = new ArrayList<>(Habitat.instance().getVehicleList());
+        carList.removeIf(vehicle -> !(vehicle instanceof Car));
+//        try {
+//            outStream.close();
+//        } catch (Exception e) { e.printStackTrace(); }
+        try{
+            objectOutStream.writeObject(carList);
+            objectOutStream.flush();
+        } catch (Exception e) { e.printStackTrace(); }
+        carList.forEach(e -> EntityManager.instance().removeEntity(e));
+//        try {
+//            outStream = new DataOutputStream(socket.getOutputStream());
+//        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public static void getCars() {
+        try {
+//            inStream.close();
+            ArrayList<Vehicle> carList = (ArrayList<Vehicle>) objectInStream.readObject();
+            carList.forEach(e -> EntityManager.instance().addEntity(e));
+ //           inStream = new DataInputStream(socket.getInputStream());
+        }catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public static LinkedList<String> getUsersList() { return usersList; }
+
+    public void updateUsersList(LinkedList<String> usersList) { Client.usersList = usersList;}
 }

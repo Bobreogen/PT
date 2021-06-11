@@ -1,6 +1,7 @@
 package gui;
 
 import AI.AIManager;
+import Net.Client;
 import config.ConfigManager;
 import entities.*;
 import logic.*;
@@ -30,8 +31,10 @@ public class WindowMain extends JFrame {
     private JToggleButton hideSimulationTimeToggle;
     private JToggleButton showInformationToggleButton;
     private JLabel simulationTimeLabel;
+    private ClientWindow clientWindow;
     private boolean showInfo = false;
     private boolean isInit = false;
+    private String userName = "Local";
 
     private boolean showSimulationTime = false;
     private long systemTime = 0;
@@ -59,7 +62,7 @@ public class WindowMain extends JFrame {
 
             @Override
             public void windowClosing(WindowEvent event) {
-                ConfigManager.SaveHabitatConfig();
+                ConfigManager.SaveHabitatConfig(userName);
                 System.exit(0);
             }
 
@@ -148,6 +151,24 @@ public class WindowMain extends JFrame {
             @Override
             public void menuSelected(MenuEvent e) {
                 new Console();
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
+
+        JMenu clientMenu = new JMenu("Клиент");
+        menuBar.add(clientMenu);
+
+        clientMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                clientWindow.setVisible(true);
             }
 
             @Override
@@ -353,9 +374,15 @@ public class WindowMain extends JFrame {
     public void onFrame(long dt) {
         if(!isInit)
         {
-            ConfigManager.LoadHabitatConfig();
+            setVisible(false);
+            new LoginWindow();
+            new Client();
+            clientWindow = ClientWindow.Instance();
+            clientWindow.setVisible(false);
+            ConfigManager.LoadHabitatConfig(userName);
             initTransportPanel();
             pack();
+            setVisible(true);
             isInit = true;
         }
         simulationTimeLabel.setVisible(showSimulationTime);
@@ -411,5 +438,6 @@ public class WindowMain extends JFrame {
         showInformationToggleButton.setSelected(showInfo);
     }
     public boolean getShowSimulationTime() { return showSimulationTime; }
-
+    public String getUserName() { return userName; }
+    public void setUserName(String name) { this.userName = name; }
 }
